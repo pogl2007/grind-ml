@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String              @id @default(cuid())
+  email         String              @unique
+  passwordHash  String
+  name          String?
+  plan          Plan                @default(FREE)
+  planExpiresAt DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  sessions      InterviewSession[]
+  dailyUsage    DailyUsage[]
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model InterviewSession {
+  id           String        @id @default(cuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company      String
+  topic        String
+  level        String
+  model        String
+  status       SessionStatus @default(IN_PROGRESS)
+  verdict      String?
+  overallScore Int?
+  summary      String?
+  strongSides  String[]
+  weakSides    String[]
+  studyTopics  Json?
+  messages     Message[]
+  createdAt    DateTime      @default(now())
+  completedAt  DateTime?
+
+  @@index([userId])
+  @@index([userId, createdAt])
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model Message {
+  id        String           @id @default(cuid())
+  sessionId String
+  session   InterviewSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  role      String
+  content   String           @db.Text
+  hasImage  Boolean          @default(false)
+  scores    Json?
+  createdAt DateTime         @default(now())
+
+  @@index([sessionId])
+}
+
+model DailyUsage {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     String
+  sessions Int    @default(0)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}

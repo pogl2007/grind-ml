@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { buildSystemPrompt } from '@/lib/buildSystemPrompt';
 import { parseAIResponse } from '@/lib/parseAIResponse';
 import { describeImage, streamChat, transcribeAudio } from '@/lib/openai';
+import { checkRateLimit } from '@/lib/rateLimit';
 import type { Company, Level, Topic } from '@/types';
 
 const MARKERS = ['SCORES:', 'FINAL_REPORT:'];
@@ -29,6 +30,11 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user) {
     return new Response('Не авторизован', { status: 401 });
+  }
+
+  // Защита от накрутки платных запросов к AI: не больше 20 сообщений в минуту на пользователя.
+  if (!checkRateLimit(`chat:${session.user.id}`, 20, 60 * 1000)) {
+    return new Response('Слишком много сообщений, подождите немного', { status: 429 });
   }
 
   const body = await req.json().catch(() => null);

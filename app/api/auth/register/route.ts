@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIp(req);
+  if (!checkRateLimit(`register:ip:${ip}`, 5, 60 * 60 * 1000)) {
+    return NextResponse.json(
+      { error: 'Слишком много регистраций с этого адреса, попробуйте позже' },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
 
   if (!body) {

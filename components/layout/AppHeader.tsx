@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LogoIcon } from '@/components/layout/LogoIcon';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: '/profile', label: 'Главное меню' },
   { href: '/history', label: 'История' },
   { href: '/', label: 'На главную' },
@@ -18,6 +18,8 @@ export function AppHeader() {
   const pathname = usePathname();
   const { user } = useCurrentUser();
   const plan = (user as { plan?: string } | null)?.plan ?? 'FREE';
+  const isAdmin = Boolean((user as { isAdmin?: boolean } | null)?.isAdmin);
+  const NAV_ITEMS = isAdmin ? [...BASE_NAV_ITEMS, { href: '/admin', label: 'Админка' }] : BASE_NAV_ITEMS;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg/95 backdrop-blur">

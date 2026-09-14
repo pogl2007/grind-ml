@@ -18,6 +18,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'GRIND ML — AI-симулятор технических интервью',
   description: 'AI-симулятор технических интервью для ML и DS. Яндекс · Сбер · VK · Тинькофф · Озон',
+  verification: {
+    yandex: '3580ae5db31b6241',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -10,7 +10,9 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isPublic =
-    PUBLIC_PATHS.includes(pathname) || pathname.startsWith('/api/auth');
+    PUBLIC_PATHS.includes(pathname) ||
+    pathname.startsWith('/api/auth') ||
+    /^\/(yandex_|google).*\.html$/.test(pathname);
 
   if (isPublic) {
     return NextResponse.next();
